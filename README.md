@@ -19,10 +19,13 @@
 ## 安装依赖
 
 ```bash
-pip install starlette uvicorn
+pip install starlette uvicorn mcp
 ```
 
 ## 启动服务示例
 ```bash
 python server/read_file_server.py --host 0.0.0.0 --port 8080
 ```
+
+## 注册mcp插件
+URL: http://<host>:<port>/sse
