@@ -1,0 +1,13 @@
+{
+  "mcpServers" : {
+    "hostInfoMcp" : {
+      "command" : "conda",
+        "args" : [
+          "--directory",
+          "D:\\dev\\PythonProjects\\MCP-demo\\server",
+          "run",
+          "read_file_server.py"
+        ]
+    }
+  }
+}
