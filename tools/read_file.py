@@ -1,6 +1,6 @@
 import ast
 import os
-import sys
+from typing import List, Dict, Optional
 
 
 def find_project_root(start_path):
@@ -27,67 +27,80 @@ def find_project_root(start_path):
 
     return start_path
 
-
-def recursive_read(filepath, base_path=None, visited=None, project_root=None):
+def get_file_content(filepath: str) -> Dict[str, str]:
     """
-    递归读取 Python 文件及其本地依赖
-    """
-    if visited is None:
-        visited = set()
+    读取单个文件的内容
 
-    # 入口时确定 base_path 和 project_root
-    if base_path is None:
+    Args:
+        filepath: 文件的绝对路径或相对路径
+
+    Returns:
+        {"filepath": 绝对路径, "content": 文件内容}
+    """
+    try:
         abspath = os.path.abspath(filepath)
-        base_path = os.path.dirname(abspath)
-        # 智能检测项目根目录
-        project_root = find_project_root(base_path)
-        print(f"检测到项目根目录: {project_root}")
-    else:
-        abspath = os.path.abspath(os.path.join(base_path, filepath))
+        with open(abspath, "r", encoding="utf-8") as f:
+            content = f.read()
+        return {
+            "filepath": abspath,
+            "content": content,
+            "status": "success"
+        }
+    except Exception as e:
+        return {
+            "filepath": filepath,
+            "error": str(e),
+            "status": "error"
+        }
 
-    abspath = os.path.normcase(abspath)
-    print(f"读取文件: {abspath}")
 
-    if abspath in visited:
-        return {}
+def get_file_imports(filepath: str, project_root: Optional[str] = None) -> Dict:
+    """
+    分析文件的导入语句，返回本地依赖的文件路径列表
+
+    Args:
+        filepath: 要分析的文件路径
+        project_root: 项目根目录（可选，自动检测）
+
+    Returns:
+        {
+            "filepath": 文件绝对路径,
+            "project_root": 项目根目录,
+            "local_imports": [本地依赖文件的绝对路径列表],
+            "external_imports": [外部模块名称列表],
+            "import_details": [详细的导入信息]
+        }
+    """
+    abspath = os.path.abspath(filepath)
 
     if not os.path.exists(abspath):
-        print(f"文件不存在: {abspath}")
-        return {}
+        return {"error": f"文件不存在: {abspath}", "status": "error"}
 
-    visited.add(abspath)
-    result = {}
+    # 自动检测项目根目录
+    if project_root is None:
+        project_root = find_project_root(os.path.dirname(abspath))
 
     try:
         with open(abspath, "r", encoding="utf-8") as f:
             content = f.read()
-        result[abspath] = content
-    except Exception as e:
-        print(f"读取文件失败: {abspath}, 错误: {e}")
-        return result
-
-    # 解析 AST
-    try:
         tree = ast.parse(content, filename=abspath)
     except Exception as e:
-        print(f"解析AST失败: {abspath}, 错误: {e}")
-        return result
+        return {"error": f"解析失败: {str(e)}", "status": "error"}
 
     current_dir = os.path.dirname(abspath)
+    local_imports = []
+    external_imports = []
+    import_details = []
 
     def resolve_module_path(module_parts, level=0):
         """解析模块路径为文件路径"""
-        # 计算相对导入的起始目录
         if level > 0:
-            # 相对导入
             parent_dir = current_dir
             for _ in range(level - 1):
                 parent_dir = os.path.dirname(parent_dir)
         else:
-            # 绝对导入，从 project_root 开始
             parent_dir = project_root
 
-        # 构建模块路径
         module_path = os.path.join(parent_dir, *module_parts)
 
         # 尝试 module.py
@@ -114,71 +127,125 @@ def recursive_read(filepath, base_path=None, visited=None, project_root=None):
             return False
 
     for node in ast.walk(tree):
-        # 处理 from ... import ...
         if isinstance(node, ast.ImportFrom):
             level = node.level or 0
+            module_name = node.module or ""
+            imported_names = [alias.name for alias in node.names]
 
             if node.module:
-                # from .module import name 或 from package.module import name
                 module_parts = node.module.split(".")
                 dep_path = resolve_module_path(module_parts, level)
 
+                import_info = {
+                    "type": "from_import",
+                    "module": node.module,
+                    "names": imported_names,
+                    "level": level,
+                    "is_local": is_local_file(dep_path),
+                    "resolved_path": dep_path
+                }
+
                 if is_local_file(dep_path):
-                    print(f"  -> 发现依赖: {node.module} (level={level}) -> {dep_path}")
-                    result.update(recursive_read(
-                        dep_path,
-                        base_path=base_path,
-                        visited=visited,
-                        project_root=project_root
-                    ))
+                    local_imports.append(dep_path)
                 else:
-                    if dep_path:
-                        print(f"  -> 跳过非本地模块: {node.module}")
-                    else:
-                        print(f"  -> 无法解析模块: {node.module}")
+                    external_imports.append(node.module)
+
+                import_details.append(import_info)
+
             else:
                 # from . import name
                 if level > 0 and node.names:
                     for alias in node.names:
                         if alias.name != "*":
                             dep_path = resolve_module_path([alias.name], level)
-                            if is_local_file(dep_path):
-                                print(f"  -> 发现依赖: from {'.' * level} import {alias.name} -> {dep_path}")
-                                result.update(recursive_read(
-                                    dep_path,
-                                    base_path=base_path,
-                                    visited=visited,
-                                    project_root=project_root
-                                ))
+                            import_info = {
+                                "type": "relative_import",
+                                "names": [alias.name],
+                                "level": level,
+                                "is_local": is_local_file(dep_path),
+                                "resolved_path": dep_path
+                            }
 
-        # 处理 import ...
+                            if is_local_file(dep_path):
+                                local_imports.append(dep_path)
+
+                            import_details.append(import_info)
+
         elif isinstance(node, ast.Import):
             for alias in node.names:
                 module_parts = alias.name.split(".")
                 dep_path = resolve_module_path(module_parts, level=0)
 
+                import_info = {
+                    "type": "import",
+                    "module": alias.name,
+                    "is_local": is_local_file(dep_path),
+                    "resolved_path": dep_path
+                }
+
                 if is_local_file(dep_path):
-                    print(f"  -> 发现依赖: import {alias.name} -> {dep_path}")
-                    result.update(recursive_read(
-                        dep_path,
-                        base_path=base_path,
-                        visited=visited,
-                        project_root=project_root
-                    ))
+                    local_imports.append(dep_path)
+                else:
+                    external_imports.append(alias.name)
 
-    return result
+                import_details.append(import_info)
+
+    return {
+        "filepath": abspath,
+        "project_root": project_root,
+        "local_imports": list(set(local_imports)),  # 去重
+        "external_imports": list(set(external_imports)),  # 去重
+        "import_details": import_details,
+        "status": "success"
+    }
 
 
-def recursive_read_with_logging(filepath, base_path=None, project_root=None):
+def get_dependency_tree(filepath: str, max_depth: int = 3, project_root: Optional[str] = None) -> Dict:
     """
-    封装的函数，用于调用 recursive_read 并打印 visited 集合
+    获取依赖树结构（不包含文件内容，仅路径）
+
+    Args:
+        filepath: 起始文件路径
+        max_depth: 最大递归深度
+        project_root: 项目根目录
+
+    Returns:
+        依赖树结构
     """
+    if project_root is None:
+        abspath = os.path.abspath(filepath)
+        project_root = find_project_root(os.path.dirname(abspath))
+
     visited = set()
-    result = recursive_read(filepath, base_path=base_path, visited=visited, project_root=project_root)
 
-    # 打印 visited 集合
-    print("Visited files:")
-    for path in visited:
-        print(path)
+    def build_tree(path, depth=0):
+        if depth > max_depth:
+            return {"truncated": True, "reason": "max_depth_reached"}
 
-    return result
+        abspath = os.path.abspath(path)
+        if abspath in visited:
+            return {"circular": True}
+
+        visited.add(abspath)
+
+        imports_result = get_file_imports(abspath, project_root)
+        if imports_result.get("status") == "error":
+            return imports_result
+
+        dependencies = {}
+        for dep_path in imports_result.get("local_imports", []):
+            dependencies[dep_path] = build_tree(dep_path, depth + 1)
+
+        return {
+            "filepath": abspath,
+            "local_imports": imports_result.get("local_imports", []),
+            "external_imports": imports_result.get("external_imports", []),
+            "dependencies": dependencies
+        }
+
+    return {
+        "root": filepath,
+        "project_root": project_root,
+        "tree": build_tree(filepath),
+        "total_files": len(visited)
+    }
