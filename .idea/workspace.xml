@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="fd3e659b-a63c-42c4-ab58-cac21ff3ee8d" name="Changes" comment="修改递归逻辑">
+      <change afterPath="$PROJECT_DIR$/tools/directory_analyzer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/MCP-demo.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/MCP-demo.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/read_file_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/server/read_file_server.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -57,7 +59,7 @@
     &quot;Python.test_read_file.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -70,6 +72,7 @@
   <component name="RunManager" selected="Python.read_file_server">
     <configuration name="read_file_server" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="MCP-demo" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -92,6 +95,7 @@
     </configuration>
     <configuration name="test_read_file" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="MCP-demo" />
+      <option name="ENV_FILES" value="" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
       <envs>
@@ -139,6 +143,7 @@
       <workItem from="1759573254973" duration="1664000" />
       <workItem from="1760083260035" duration="1175000" />
       <workItem from="1760429924708" duration="732000" />
+      <workItem from="1760509140380" duration="7372000" />
     </task>
     <task id="LOCAL-00001" summary="更新readme">
       <option name="closed" value="true" />
@@ -170,8 +175,8 @@
     <option name="LAST_COMMIT_MESSAGE" value="更新readme" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/MCP$test_read_file.coverage" NAME="test_read_file Coverage Results" MODIFIED="1759569205951" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tmp" />
     <SUITE FILE_PATH="coverage/MCP$read_file_server.coverage" NAME="read_file_server Coverage Results" MODIFIED="1759649077428" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/server" />
-    <SUITE FILE_PATH="coverage/MCP_demo$read_file_server.coverage" NAME="read_file_server Coverage Results" MODIFIED="1759481455158" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/server" />
+    <SUITE FILE_PATH="coverage/MCP_demo$read_file_server.coverage" NAME="read_file_server Coverage Results" MODIFIED="1760516204856" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/server" />
+    <SUITE FILE_PATH="coverage/MCP$test_read_file.coverage" NAME="test_read_file Coverage Results" MODIFIED="1759569205951" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tmp" />
   </component>
 </project>
